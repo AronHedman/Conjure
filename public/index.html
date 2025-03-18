@@ -8,12 +8,20 @@
   </head>
   <body>
       
-    <div id="resourceContainer">
-      <div id="energyContainer">Energy: <span id="energyAmount">0</span></div>
-      <button id="energyBtn" onclick="isGathering('energy', this)">Gather</button>
-      <button onclick="save()">Save</button>
-      <button onclick="loadGame()">Load</button>
+    <div id="resourceContainer" class="container">
+      <div id="energyContainer" class="subResourceContainer">Energy: <span id="energyAmount">0</span>
+      <button id="energyBtn" onclick="isGathering('energy', this)" class="button">Gather</button>
+      </div>
+
+      <div id="matterContainer" class="subResourceContainer">Matter: <span id="matterAmount">0</span>
+        <button id="matterBtn" onclick="isGathering('matter', this)" class="button">Gather</button>
+        </div>
+
     </div>
+
+      <button onclick="save()" class="button">Save</button>
+      <button onclick="loadGame()" class="button">Load</button>
+    
 
     <div id="upgradeContainer">
       <div id="emc2Upgrade" style="display: none;">E = MC^2</div>
