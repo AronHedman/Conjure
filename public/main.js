@@ -13,34 +13,34 @@ let game = {
             basePerSec: 0,
             perSec: 0,
             max: 100,
-            cost: function() {
-                    return {}; // Inga krav för energy
-                },
+            cost: function () {
+                return {}; // Inga krav för energy
             },
+        },
         matter: {
             amount: 0,
             basePerSec: 0,
             perSec: 0,
             max: 100,
-            cost: function() {
-                return {energy: 2};
+            cost: function () {
+                return { energy: 2 };
             },
         },
-    upgrades: {
-        emc2: {
-            unlocked: false,
-            purchased: false,
-            req: function () {
+        upgrades: {
+            emc2: {
+                unlocked: false,
+                purchased: false,
+                req: function () {
                     return { energy: 20 }; // Kräver 20 energy
                 },
-            cost: function () {
+                cost: function () {
                     return { energy: 20 }; // Drar 20 energy vid köp
                 },
             },
         },
-    
+
     },
-};
+}
 
 function canAfford(cost) {
     for (let resource in cost) {
@@ -62,20 +62,48 @@ function payCost(cost) {
 }
 
 function isGathering(resource, element) {
-    if(game.resources[resource]) {
-        switch (resource) {
-            case "energy":
-                game.player.isGathering[resource] = !game.player.isGathering[resource];
-                element.innerHTML = game.player.isGathering[resource] ? "Focusing" : "Focus";
-                break;
-
-            case "matter":
-                game.player.isGathering[resource] = !game.player.isGathering[resource];
-                element.innerHTML = game.player.isGathering[resource] ? "Gathering" : "Gather";
-                break;
-        };''
+    if (game.resources[resource]) {
+        // Om samma resurs klickas, stäng av den
+        if (game.player.isGathering[resource]) {
+            game.player.isGathering[resource] = false;
+        } else {
+            // Stäng av alla andra resurser
+            for (let key in game.player.isGathering) {
+                game.player.isGathering[key] = false;
+            }
+            // Aktivera den valda resursen
+            game.player.isGathering[resource] = true;
+        }
+        // Uppdatera alla knappars text
+        updateGatherButtons();
     }
-};
+}
+
+function updateGatherButtons() {
+    for (let key in game.player.isGathering) {
+        let button = document.getElementById(key + "Btn");
+        if (button) {
+            button.innerHTML = game.player.isGathering[key] ? gatheringText(key) : defaultText(key);
+        }
+    }
+}
+
+function gatheringText(key) {
+    switch (key) {
+        case "energy": return "Focusing";
+        case "matter": return "Gathering";
+        default: return "Gathering";
+    }
+}
+
+// Funktion för att hämta rätt text vid inaktivering
+function defaultText(key) {
+    switch (key) {
+        case "energy": return "Focus";
+        case "matter": return "Gather";
+        default: return "Gather";
+    }
+}
 
 function updateResourcePerSec() {
     for (let key in game.resources) {
@@ -104,16 +132,6 @@ function resourceIncrease() {
     }
 }
 
-function guiUpdate() {
-    for (let key in game.resources) {
-        let resource = game.resources[key];
-        let element = document.getElementById(key + "Amount");
-        if (element) {
-            element.innerHTML = resource.amount;
-        }
-    }
-}
-
 function checkUnlocks() {
     for (let key in game.upgrades) {
         let upgrade = game.upgrades[key];
@@ -124,13 +142,23 @@ function checkUnlocks() {
     }
 }
 
+function guiUpdate() {
+    for (let key in game.resources) {
+        let resource = game.resources[key];
+        let element = document.getElementById(key + "Amount");
+        if (element) {
+            element.innerHTML = resource.amount;
+        }
+    }
+}
+
 //Game loop
 window.setInterval(
-    function(){
-	
-    updateResourcePerSec();
-    resourceIncrease();
-	checkUnlocks();
-    guiUpdate();
+    function () {
 
-}, 1000);
+        updateResourcePerSec();
+        resourceIncrease();
+        checkUnlocks();
+        guiUpdate();
+
+    }, 1000);
