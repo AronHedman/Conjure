@@ -2,10 +2,6 @@
 let game = {
     player: {
         power: 1,
-        isGathering: {
-            energy: false,
-            matter: false,
-        },
     },
     resources: {
         energy: {
@@ -14,8 +10,9 @@ let game = {
             perSec: 0,
             max: 100,
             cost: function () {
-                return {}; // Inga krav för energy
+                return {}; //No cost
             },
+            isGathering: false,
         },
         matter: {
             amount: 0,
@@ -25,22 +22,24 @@ let game = {
             cost: function () {
                 return { energy: 2 };
             },
+            isGathering: false,
         },
-        upgrades: {
-            emc2: {
-                unlocked: false,
-                purchased: false,
-                req: function () {
-                    return { energy: 20 }; // Kräver 20 energy
-                },
-                cost: function () {
-                    return { energy: 20 }; // Drar 20 energy vid köp
-                },
+    },
+    upgrades: {
+        emc2: {
+            unlocked: false,
+            purchased: false,
+            req: function () {
+                return { energy: 20 }; //Requires 20 energy
+            },
+            cost: function () {
+                return { energy: 20 }; //Costs 20 energy
             },
         },
-
     },
-}
+
+};
+
 
 function canAfford(cost) {
     for (let resource in cost) {
@@ -61,33 +60,36 @@ function payCost(cost) {
     return false;
 }
 
-function isGathering(resource, element) {
+function isGathering(resource) {
     if (game.resources[resource]) {
-        // Om samma resurs klickas, stäng av den
-        if (game.player.isGathering[resource]) {
-            game.player.isGathering[resource] = false;
+
+        //Toggle of selected resources
+        if (game.resources[resource].isGathering) {
+            game.resources[resource].isGathering = false;
         } else {
-            // Stäng av alla andra resurser
-            for (let key in game.player.isGathering) {
-                game.player.isGathering[key] = false;
+            //Toggle of all resources
+            for (let key in game.resources) {
+                game.resources[key].isGathering = false;
             }
-            // Aktivera den valda resursen
-            game.player.isGathering[resource] = true;
+            //Activate the chosen resource
+            game.resources[resource].isGathering = true;
         }
-        // Uppdatera alla knappars text
+
+        //Update gather-btn text
         updateGatherButtons();
     }
 }
 
 function updateGatherButtons() {
-    for (let key in game.player.isGathering) {
+    for (let key in game.resources) {
         let button = document.getElementById(key + "Btn");
         if (button) {
-            button.innerHTML = game.player.isGathering[key] ? gatheringText(key) : defaultText(key);
+            button.innerHTML = game.resources[key].isGathering ? gatheringText(key) : defaultText(key);
         }
     }
 }
 
+//Function to get the default text when gathering
 function gatheringText(key) {
     switch (key) {
         case "energy": return "Focusing";
@@ -96,7 +98,7 @@ function gatheringText(key) {
     }
 }
 
-// Funktion för att hämta rätt text vid inaktivering
+// Function to get the default text when not gathering
 function defaultText(key) {
     switch (key) {
         case "energy": return "Focus";
@@ -107,11 +109,11 @@ function defaultText(key) {
 
 function updateResourcePerSec() {
     for (let key in game.resources) {
-        game.resources[key].perSec = game.resources[key].basePerSec;
+        game.resources[key].perSec = game.resources[key].basePerSec; //Reset per sec
     }
 
-    for (let key in game.player.isGathering) {
-        if (game.player.isGathering[key] && game.resources[key]) {
+    for (let key in game.resources) {
+        if (game.resources[key].isGathering) {
             let cost = game.resources[key].cost();
             if (canAfford(cost)) {
                 game.resources[key].perSec += game.player.power;
@@ -128,16 +130,6 @@ function resourceIncrease() {
             resource.amount += resource.perSec;
         } else {
             resource.amount = resource.max;
-        }
-    }
-}
-
-function checkUnlocks() {
-    for (let key in game.upgrades) {
-        let upgrade = game.upgrades[key];
-        if (!upgrade.unlocked && canAfford(upgrade.req())) {
-            upgrade.unlocked = true;
-            document.getElementById(key + "Upgrade").style.display = "block";
         }
     }
 }
