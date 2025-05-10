@@ -5,43 +5,58 @@ let game = {
     },
     resources: {
         energy: {
-            amount: 0,
-            basePerSec: 0,
-            perSec: 0,
+            amount: 18,
             max: 100,
-            cost: function () {
-                return {}; //No cost
-            },
+            perSec: 0,
             isGathering: false,
+            cost: null,
         },
         matter: {
             amount: 0,
-            basePerSec: 0,
-            perSec: 0,
             max: 100,
-            cost: function () {
-                return { energy: 2 };
-            },
+            perSec: 0,
             isGathering: false,
+            cost: { energy: 2 },
         },
     },
     upgrades: {
-        emc2: {
+        upg1: {
+            id: "upg1",
+            name: "E=mc^2",
+            description: "According to Einstein Energy = Masss. Somehow...",
             unlocked: false,
             purchased: false,
-            req: function () {
-                return { energy: 20 }; //Requires 20 energy
-            },
-            cost: function () {
-                return { energy: 20 }; //Costs 20 energy
-            },
+            req: { energy: 20 },
+            cost: { energy: 20 },
+        },
+        upg2: {
+            id: "upg2",
+            name: null,
+            description: null,
+            unlocked: false,
+            purchased: false,
+            req: {},
+            cost: {},
         },
     },
+    scalableUpgrades: {
+        sUpg1: {
+            id: "sUpg1",
+            name: "Workout",
+            unlocked: false,
+            purchased: false,
+            req: { energy: 50 },
+            cost: { energy: 50 },
+            level: 0,
+        },
+    }
 
-};
+}
 
-
-function canAfford(cost) {
+function hasEnough(cost) {
+    if(cost == null) {
+        return true;
+    }
     for (let resource in cost) {
         if (!game.resources[resource] || game.resources[resource].amount < cost[resource]) {
             return false;
@@ -51,18 +66,58 @@ function canAfford(cost) {
 }
 
 function payCost(cost) {
-    if (canAfford(cost)) {
+    if(cost == null) {
+        return true;
+    }
+    if (hasEnough(cost)) {
         for (let resource in cost) {
             game.resources[resource].amount -= cost[resource];
         }
+        updateResourceGUI();
+        updateUpgradeGUI();
         return true;
     }
     return false;
 }
 
+function resourceIncrease() {
+    for (let key in game.resources) {
+        let resource = game.resources[key];
+
+        let gain = resource.perSec + game.player.power;
+
+        if (resource.isGathering) {
+            if(resource.amount + gain <= resource.max) {
+                if(hasEnough(resource.cost)) {
+                    payCost(resource.cost);
+                    resource.amount += gain;
+                }
+            }
+        } else {
+            if(resource.perSec > 0) {
+            if(resource.amount + resource.perSec <= resource.max) {
+                if(hasEnough(resource.cost)) {
+                    payCost(resource.cost);
+                    resource.amount += resource.perSec;
+                }
+            }
+        }
+        }
+    }
+}
+
+function updateResourceGUI() {
+    for (let key in game.resources) {
+        let resource = game.resources[key];
+        let resourceElement = document.getElementById(key + "Amount");
+        if (resourceElement) {
+            resourceElement.innerHTML = resource.amount + "/" + resource.max;
+        }
+    }
+}
+
 function isGathering(resource) {
     if (game.resources[resource]) {
-
         //Toggle of selected resources
         if (game.resources[resource].isGathering) {
             game.resources[resource].isGathering = false;
@@ -74,7 +129,6 @@ function isGathering(resource) {
             //Activate the chosen resource
             game.resources[resource].isGathering = true;
         }
-
         //Update gather-btn text
         updateGatherButtons();
     }
@@ -107,50 +161,10 @@ function defaultText(key) {
     }
 }
 
-function updateResourcePerSec() {
-    for (let key in game.resources) {
-        game.resources[key].perSec = game.resources[key].basePerSec; //Reset per sec
-    }
-
-    for (let key in game.resources) {
-        if (game.resources[key].isGathering) {
-            let cost = game.resources[key].cost();
-            if (canAfford(cost)) {
-                game.resources[key].perSec += game.player.power;
-                payCost(cost);
-            }
-        }
-    }
-}
-
-function resourceIncrease() {
-    for (let key in game.resources) {
-        let resource = game.resources[key];
-        if ((resource.amount + resource.perSec) < resource.max) {
-            resource.amount += resource.perSec;
-        } else {
-            resource.amount = resource.max;
-        }
-    }
-}
-
-function guiUpdate() {
-    for (let key in game.resources) {
-        let resource = game.resources[key];
-        let element = document.getElementById(key + "Amount");
-        if (element) {
-            element.innerHTML = resource.amount;
-        }
-    }
-}
-
-//Game loop
 window.setInterval(
     function () {
-
-        updateResourcePerSec();
         resourceIncrease();
-        checkUnlocks();
-        guiUpdate();
-
-    }, 1000);
+        updateResourceGUI();
+        upgrades();
+    }, 1000
+);

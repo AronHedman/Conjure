@@ -9,44 +9,73 @@
 
     text-decoration: none;
     list-style: none;
-
-    
 }
 
 html {
     font-size: 1vw;
+    scroll-behavior: smooth;
+    overflow: hidden;
 }
 
 body {
-    padding: 0.5vw;
     width: 100vw;
     height: 100vh;
 }
 
+#gameContainer {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    width: 100vw;
+    height: 90vh;
+}
+
 .container {
+    display: block;
+    padding: 0.5vw;
+    border: #0f0f0f 0.1vw solid;
+}
+
+#resourceContainer {
+    grid-column: 1 / span 2;
+    grid-row: 1 / span 8;
     display: flex;
-    justify-content: center;
-    width: 50%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex-direction: column;
+}
+
+.subResourceContainer {
+    display: inline-block;
+    height: min-content;
     margin: 0.5vw;
     padding: 0.5vw;
     border: #0f0f0f 0.1vw solid;
 }
 
-#resouceContainer {
-
-}
-
-.subResourceContainer {
-    display: inline-block;
-    width: 50%;
-    margin: 0.5vw;
-    padding: 0.5vw;
-    border: #0f0f0f 0.1vw solid; 
-}
-
 .button {
-    align-self: flex-end;
     padding: 0.2vw;
     border: #0f0f0f 0.15vw solid;
     border-radius: 0.2vw;
+}
+
+#upgradeContainer {
+    grid-column: 7 / span 2;
+    grid-row: 1 / span 8;
+}
+
+.upgradeElement {
+    margin: 0.5vw;
+    padding: 0.5vw;
+    border: #0f0f0f 0.1vw solid;
+}
+
+#footerContainer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 10vh;
+    padding: 0.5vw;
+    border: #0f0f0f 0.1vw solid;
 }
